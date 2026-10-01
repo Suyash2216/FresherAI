@@ -66,6 +66,8 @@ function Dashboard({ user, setUser }) {
 
   return (
     <div className='bg-white min-h-screen text-[#0A0A0A] font-sans flex'>
+      {/* check sliderbar.jsx  */}
+      
       <Sidebar
         user={user}
         onNewInterview={() => navigate("/interview")}

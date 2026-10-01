@@ -7,7 +7,7 @@ import { useState } from 'react';
 import dashboard from "../assets/image.png"
 import { FiMic, FiFileText, FiBarChart2, FiMap } from "react-icons/fi";
 function Home({ setUser }) {
-    const [showLogin, setShowLogin] = useState(false)
+    const [showLogin, setShowLogin] = useState(false);
     return (
         <div className='bg-white text-[#0A0A0A] font-sans min-h-screen overflow-x-hidden'>
 
@@ -59,7 +59,7 @@ function Home({ setUser }) {
                         className='text-3xl md:text-5xl font-extrabold leading-[1.1] tracking-tight mb-4 text-[#0A0A0A] [text-shadow:0_4px_24px_rgba(0,0,0,0.12)]'>
                         Job Interviews<br />
                         <span className="text-black/30">
-                            Don't Have to Suck
+                            Don't Have to Stuck
                         </span><br />
                         Anymore!
                     </motion.h1>
@@ -196,4 +196,4 @@ function Home({ setUser }) {
     )
 }
 
-export default Home
+export default Home;

@@ -1,8 +1,6 @@
 import express from "express";
+
 import {addCoins, login, logout, useInterviewCoins } from "../controllers/auth.controller.js";
-
-
-
 
 const authRouter = express.Router();
 

@@ -5,11 +5,12 @@ import { FcGoogle } from "react-icons/fc";
 import { signInWithPopup } from 'firebase/auth';
 import { auth, provider } from '../utils/firebase';
 import api from '../utils/axios';
+
 function LoginModel({ onClose ,setUser}) {
 
     const handleGoogleAuth = async () => {
         try {
-            const result = await signInWithPopup(auth , provider)
+            const result = await signInWithPopup(auth , provider);
             const token = await result.user.getIdToken()
 
             const response = await api.post("/api/auth/login" , {token})
