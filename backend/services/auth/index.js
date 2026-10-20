@@ -15,7 +15,7 @@ app.use(cookieParser());
 
 const PORT = process.env.PORT || 6001
 
-app.use("/",authRouter);
+app.use("/",authRouter); 
 
 
 

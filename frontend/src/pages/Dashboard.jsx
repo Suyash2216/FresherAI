@@ -8,6 +8,7 @@ import { useEffect } from 'react'
 import { getAllInterviews } from '../apis/interview.api'
 import Statbox from '../components/Statbox'
 import InterviewGraph from '../components/InterviewGraph'
+
 function Dashboard({ user, setUser }) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [moblieOpen, setMoblieOpen] = useState(false)

@@ -1,118 +1,139 @@
 
-
-// pdf  ---->  pdf Storage  ---> text ---> llm ---> agent ---> promt ---> data ---> save mongoDb ---> redis -->pdf delete ---> resume data ( score , missing skills , recommen.)
-
 import redis from "../../../shared/redis/redis.js";
 import { resumeAgent } from "../agents/resume.agent.js";
 import extractText from "../config/pdf.js";
 import Resume from "../models/resume.model.js";
-import fs from "fs"
+import fs from "fs";
 
+export const uploadResume = async (req, res) => {
+    const file = req.file;
 
-export const uploadResume = async (req,res) => {
     try {
-        const file = req.file;
-        if(!file){
+        if (!file) {
             return res.status(400).json({
-                success:false,
-                message:"Resume PDF is required"
-            })
+                success: false,
+                message: "Resume PDF is required",
+            });
         }
+
         const userId = req.headers["x-user-id"];
 
-          if(!userId){
+        if (!userId) {
             return res.status(400).json({
-                success:false,
-                message:"UserId is required"
-            })
+                success: false,
+                message: "UserId is required",
+            });
         }
 
-        const resumeText = await extractText(file.path)
+        const resumeText = await extractText(file.path);
+        const aiResponse = await resumeAgent(resumeText);
 
-        const aiResponse = await resumeAgent(resumeText)
+        const resumeData =
+            typeof aiResponse === "string"
+                ? JSON.parse(
+                    aiResponse
+                        .replace(/```json/g, "")
+                        .replace(/```/g, "")
+                        .trim()
+                )
+                : aiResponse;
 
-        const resumeData = JSON.parse(aiResponse)
+        let resume = await Resume.findOne({ userId });
 
-        let resume = await Resume.findOne({userId})
-
-        if(resume){
-            Object.assign(resume,{
+        if (resume) {
+            Object.assign(resume, {
                 ...resumeData,
-                extractedText:resumeText
+                extractedText: resumeText,
+            });
 
-            }    
-            )
-            await resume.save()
-        }else{
+            await resume.save();
+        } else {
             resume = await Resume.create({
                 userId,
-                extractedText:resumeText,
-                ...resumeData
-            })
+                extractedText: resumeText,
+                ...resumeData,
+            });
         }
 
-        await redis.set(`resume:${userId}`,JSON.stringify(resume));
-
-        await fs.unlinkSync(file.path);
+        await redis.set(
+            `resume:${userId}`,
+            JSON.stringify(resume)
+        );
 
         return res.status(200).json({
-            success:true,
-            message:"Resume analyzed successfully",
-            data:resume
-        })
-
-        
+            success: true,
+            message: "Resume analyzed successfully",
+            data: resume,
+        });
     } catch (error) {
-        console.log(error)
+        console.error("Resume Upload Error:", error);
 
-        if(file){
-            await fs.unlinkSync(file.path);
-        }
         return res.status(500).json({
-            success:false,
-            message:error.message,
-        })
-        
+            success: false,
+            message: error.message,
+        });
+    } finally {
+        if (file?.path) {
+            try {
+                await fs.promises.unlink(file.path);
+            } catch (cleanupError) {
+                if (cleanupError.code !== "ENOENT") {
+                    console.error(
+                        "Temporary PDF cleanup failed:",
+                        cleanupError
+                    );
+                }
+            }
+        }
     }
-}
+};
 
-
-export const getResume = async (req,res) => {
+export const getResume = async (req, res) => {
     try {
         const userId = req.headers["x-user-id"];
 
-    const cache = await redis.get(`resume:${userId}`)
+        if (!userId) {
+            return res.status(400).json({
+                success: false,
+                message: "UserId is required",
+            });
+        }
 
-    if(cache){
+        const cache = await redis.get(`resume:${userId}`);
+
+        if (cache) {
+            return res.status(200).json({
+                success: true,
+                source: "redis",
+                data: JSON.parse(cache),
+            });
+        }
+
+        const resume = await Resume.findOne({ userId });
+
+        if (!resume) {
+            return res.status(404).json({
+                success: false,
+                message: "Resume not found",
+            });
+        }
+
+        await redis.set(
+            `resume:${userId}`,
+            JSON.stringify(resume)
+        );
+
         return res.status(200).json({
-            success:true,
-            source:"redis",
-            data:JSON.parse(cache)
-        })
-    }
-    const resume = await Resume.findOne({userId})
-
-    if(!resume){
-        return res.status(404).json({
-            success:false,
-            message:"resume not found"
-        })
-    }
-
-    await redis.set(`resume:${userId}`,JSON.stringify(resume));
-   
-
-     return res.status(200).json({
-            success:true,
-            source:"mongoDb",
-            data:resume
-        })
-        
+            success: true,
+            source: "mongoDb",
+            data: resume,
+        });
     } catch (error) {
-        console.log(error)
-         return res.status(500).json({
-            success:false,
-            message:error.message,
-        })
+        console.error("Get Resume Error:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: error.message,
+        });
     }
-}
+};

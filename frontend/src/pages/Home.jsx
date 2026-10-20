@@ -6,8 +6,9 @@ import LoginModel from '../components/LoginModel';
 import { useState } from 'react';
 import dashboard from "../assets/image.png"
 import { FiMic, FiFileText, FiBarChart2, FiMap } from "react-icons/fi";
+
 function Home({ setUser }) {
-    const [showLogin, setShowLogin] = useState(false);
+    const [showLogin, setShowLogin] = useState(false); //intially setShowlogin false kyuki phle nhi dekhna chaiye vo login page no need of it 
     return (
         <div className='bg-white text-[#0A0A0A] font-sans min-h-screen overflow-x-hidden'>
 
@@ -28,7 +29,7 @@ function Home({ setUser }) {
                 </div>
 
                 <motion.button
-                    onClick={() => setShowLogin(true)}
+                    onClick={() => setShowLogin(true)}//jaise hi login click hoga apna ShowLogin true ho jayega aur hamko login karne ke liye ek page sa dekh jayegsa jisme ek box hoga aur usme likha hoga login with google 
                     whileHover={{ scale: 1.04 }}
                     whileTap={{ scale: 0.97 }}
                     className='bg-[#0A0A0A]/80 backdrop-blur-2xl text-white font-semibold border border-white/10 rounded-md px-3 py-1.5 text-xs cursor-pointer transition-all hover:border-white/20 shadow-[0_8px_24px_rgba(0,0,0,0.25)] flex items-center gap-2'>
